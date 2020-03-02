@@ -21,6 +21,7 @@
   "homepage": "https://github.com/carloshernandezr/primary-cms#readme",
   "dependencies": {
     "asciiart-logo": "^0.2.6",
+    "console.table": "^0.10.0",
     "inquirer": "^7.0.5",
     "mysql": "^2.18.1"
   }
