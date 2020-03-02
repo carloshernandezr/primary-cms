@@ -18,7 +18,7 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
   if (err) throw err;
-  runSearch();
+ // runSearch();
 });
 
 
@@ -27,7 +27,7 @@ initialize();
 
 // Display logo text, load main prompts
 function initialize() {
-    const logoText = logo({ name: "Employee Manager" }).render();
+    const logoText = logo({ name: "Primary C M S" }).render();
     console.log(logoText);
-    mainOptions();
+ 
 }
