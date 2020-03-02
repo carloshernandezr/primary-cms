@@ -89,16 +89,38 @@ function addChoice() {
                   addEmployee();
                     break;
                 case 'Department':
-                   
+                    addDepartment();   
                     break;
                 case 'Role':
-              
+                
                     break;
                 default:
                     console.log("Error: No option selected");
             }
         });
 }
+
+function addDepartment() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'name',
+            message: "What is the department name?",
+        }
+    ])
+        .then(function (response) {
+            connection.query(
+                "INSERT INTO deparment SET ?;",
+                [response],
+                function (err, result) {
+                    if (err) throw err;
+                    console.log("Department added successfully")
+                    initialize();  
+                });
+        }
+        );
+}
+
 
 
 function addEmployee(array) {
