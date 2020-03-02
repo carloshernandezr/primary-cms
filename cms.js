@@ -48,8 +48,9 @@ function mainOptions() {
     })
     .then(function(answer) {
       switch (answer.action) {
-      case "View":
 
+      case "View":
+        viewChoice();
         break;
 
       case "Add":        
@@ -71,6 +72,63 @@ function mainOptions() {
 }
 
 
+
+/**function for view all data */
+function viewChoice() {
+    inquirer.prompt([{
+        type: 'list',
+        name: 'viewType',
+        message: 'What would you like to view?',
+        choices:
+            [
+                'All Employees',
+                'All Employees By Department',
+                'All Employees By Manager'
+            ]
+    }])
+        .then(function (response) {
+            switch (response.viewType) {
+                case 'All Employees':
+                    allEmployees(true);
+                    break;
+                case 'All Employees By Department':
+                   
+                    break;
+                case 'All Employees By Manager':
+                   
+                    break;
+                default:
+                    console.log("Error: No option selected");
+            }
+        });
+}
+
+
+function allEmployees(runInit, cb) {
+    connection.query(
+        "SELECT e.id 'ID', e.first_name 'First Name', e.last_name 'Last name', deparment.name 'Department', role.title 'Role', role.salary 'Salary', CONCAT(manag.first_name, ' ', manag.last_name) AS 'Manager' FROM employee AS e left join employee AS manag ON e.manager_id = manag.id INNER JOIN role ON e.role_id = role.id INNER JOIN deparment ON role.department_id = deparment.id ORDER BY id;",
+        function (err, result) {
+            if (err) throw err;
+            console.table(result);
+            if (runInit === false) {
+                console.log("\n");
+                return cb();
+            } else {
+                mainOptions()
+            }
+        });
+}
+
+/**function for view all data */
+
+
+
+
+
+
+
+
+//**functions for add main prompt */
 function addChoice() {
     inquirer.prompt([{
         type: 'list',
@@ -92,13 +150,48 @@ function addChoice() {
                     addDepartment();   
                     break;
                 case 'Role':
-                
+                    addRole();
                     break;
                 default:
                     console.log("Error: No option selected");
             }
         });
 }
+
+
+
+
+function addRole() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'title',
+            message: "What is the role's name?",
+        },
+        {
+            type: 'input',
+            name: 'salary',
+            message: "What is the role's salary?",
+        },
+        {
+            type: 'input',
+            name: 'department_id',
+            message: "What is the role's department?",
+        }
+    ])
+        .then(function (response) {
+            connection.query(
+                "INSERT INTO role SET ?;",
+                [response],
+                function (err, result) {
+                    if (err) throw err;
+                    console.log("Role added successfully")
+                    mainOptions() 
+                });
+        }
+        );
+}
+
 
 function addDepartment() {
     inquirer.prompt([
@@ -115,7 +208,7 @@ function addDepartment() {
                 function (err, result) {
                     if (err) throw err;
                     console.log("Department added successfully")
-                    initialize();  
+                    mainOptions() 
                 });
         }
         );
@@ -162,13 +255,14 @@ function addEmployee(array) {
                 [response],
                 function (err, result) {
                     if (err) throw err;
-                    initialize();
+                    console.log("Employee added successfully")
+                    mainOptions()
                 });
         }
         );
 }
 
-
+//**functions for add main prompt */
 
 
 
