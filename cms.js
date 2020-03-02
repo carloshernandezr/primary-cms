@@ -34,44 +34,40 @@ function initialize() {
 }
 //select the main action for to do
 function mainOptions() {
-    
-    inquirer.prompt(
-        {
-            type: "list",
-            name: "choice",
-            message: "What would you like to do?",
-            choices:
-                [
+    inquirer
+    .prompt({
+      name: "action",
+      type: "rawlist",
+      message: "What would you like to do?",
+      choices: [
+        "View",
+        "Add",
+        "Delete",        
+        "Update"
+      ]
+    })
+    .then(function(answer) {
+      switch (answer.action) {
+      case "View":
 
-                    'View',
-                    'Add',
-                    'Delete',
-                    'Update'
+        break;
 
-                ]
-        })
-        .then(function (response) {
-            switch (response.action) {
-                case 'View':
+      case "Add":        
+        addChoice();
+        break;
 
-                                      
-                case 'Add':
-                    addChoice();
-                                        
-                case 'Delete':
-
-                                    
-                case 'Update':
-
-                                   
-                // default:
-                //     console.log("Error: No option selected");
-            }
-        });
-
-     
+      case "delete":
       
+        break;
 
+      case "Update":
+      
+        break;
+
+ 
+      }
+    });
+    
 }
 
 
@@ -84,18 +80,18 @@ function addChoice() {
             [
                 'Employee',
                 'Department',
-                'Position'
+                'Role'
             ]
     }])
         .then(function (response) {
             switch (response.addType) {
                 case 'Employee':
-                   
+                  addEmployee();
                     break;
                 case 'Department':
                    
                     break;
-                case 'Position':
+                case 'Role':
               
                     break;
                 default:
@@ -119,7 +115,7 @@ function addEmployee(array) {
         },
         {
             type: 'input',
-            name: 'position_id',
+            name: 'role_id',
             message: "What is the employee's role ID?",
             // choices: array
             //this needs to be dynamic
@@ -138,6 +134,7 @@ function addEmployee(array) {
         },
     ])
         .then(function (response) {
+            //hacer una funcion para validar que el manager id no sea empty
             connection.query(
                 "INSERT INTO employee SET ?;",
                 [response],

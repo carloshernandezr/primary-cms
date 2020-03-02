@@ -5,7 +5,7 @@ USE cms_DB;
 
 CREATE TABLE deparment
 (
-    id INT NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(30) NOT NULL,
     PRIMARY KEY (id)
 );
@@ -14,7 +14,7 @@ CREATE TABLE deparment
 
 CREATE TABLE role 
 (
-    id INT NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT,
     title VARCHAR(30) NOT NULL,    
     salary DECIMAL(10,4) NOT NULL,
     department_id INT NOT NULL,
@@ -26,12 +26,17 @@ CREATE TABLE role
  
 CREATE TABLE employee
 (
-    id INT NOT NULL,
+    id INT NOT NULL AUTO_INCREMENT,
     first_name   VARCHAR(30) NOT NULL,    
     last_name    VARCHAR(30) NULL,
     role_id      INT NOT NULL,
-    manager_id   INT NULL,
+    manager_id   INT NULL DEFAULT 0,
     PRIMARY KEY  (id),
-    FOREIGN KEY  (role_id)  REFERENCES role(id),
-    FOREIGN KEY  (manager_id)  REFERENCES employee(id)
+    FOREIGN KEY  (role_id)  REFERENCES role(id)
+     
 );
+
+INSERT INTO deparment(name) VALUES ('Software');
+INSERT INTO deparment (name) VALUES ('Sales');
+INSERT INTO role (title, salary, department_id) VALUES ('Engineer',25210, '1');
+INSERT INTO role (title, salary, department_id) VALUES ('Salesman',11050, '2');
