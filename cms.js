@@ -19,12 +19,12 @@ var connection = mysql.createConnection({
 
 connection.connect(function (err) {
     if (err) throw err;
-   
+
 });
- 
+
 
 initialize();
- 
+
 
 // Display logo text, load main prompts
 function initialize() {
@@ -35,40 +35,40 @@ function initialize() {
 //select the main action for to do
 function mainOptions() {
     inquirer
-    .prompt({
-      name: "action",
-      type: "rawlist",
-      message: "What would you like to do?",
-      choices: [
-        "View",
-        "Add",
-        "Delete",        
-        "Update"
-      ]
-    })
-    .then(function(answer) {
-      switch (answer.action) {
+        .prompt({
+            name: "action",
+            type: "list",
+            message: "What would you like to do?",
+            choices: [
+                "View",
+                "Add",
+                "Delete",
+                "Update"
+            ]
+        })
+        .then(function (answer) {
+            switch (answer.action) {
 
-      case "View":
-        viewChoice();
-        break;
+                case "View":
+                    viewChoice();
+                    break;
 
-      case "Add":        
-        addChoice();
-        break;
+                case "Add":
+                    addChoice();
+                    break;
 
-      case "delete":
-      
-        break;
+                case "delete":
 
-      case "Update":
-      
-        break;
+                    break;
 
- 
-      }
-    });
-    
+                case "Update":
+
+                    break;
+
+
+            }
+        });
+
 }
 
 
@@ -92,10 +92,11 @@ function viewChoice() {
                     allEmployees(true);
                     break;
                 case 'All Employees By Department':
-                   
+
+
                     break;
                 case 'All Employees By Manager':
-                   
+
                     break;
                 default:
                     console.log("Error: No option selected");
@@ -103,6 +104,38 @@ function viewChoice() {
         });
 }
 
+//Functions to make some questions dynamically show choices
+function distinctDepartment(cb) {
+    let deptArray = [];
+    connection.query(
+        "SELECT DISTINCT role FROM department;",
+        function (err, result) {
+            if (err) throw err;
+            result.forEach(element => deptArray.push(element.role));
+            cb(deptArray)
+        }
+    )
+}
+
+function allDepartmentEmployees(array) {
+    inquirer.prompt([{
+        type: 'list',
+        name: 'department',
+        message: "View all employees in which department?",
+        choices: array
+    }])
+        .then(function (response) {
+            connection.query(
+                "SELECT e.id 'ID', e.first_name 'First Name', e.last_name 'Last name', department.name 'Department', role.title 'Position', role.salary 'Salary', CONCAT(f.first_name, ' ', f.last_name) AS 'Manager' FROM employee AS e left join employee AS f on e.manager_id = f.id INNER JOIN role ON e.role_id = role.id INNER JOIN deparment ON role.department_id = deparment.id WHERE deparment.name = ? ORDER BY id;",
+                [response.department],
+                function (err, result) {
+                    if (err) throw err;
+                    console.table(result);
+                    init();
+                });
+        }
+        );
+}
 
 function allEmployees(runInit, cb) {
     connection.query(
@@ -144,10 +177,10 @@ function addChoice() {
         .then(function (response) {
             switch (response.addType) {
                 case 'Employee':
-                  addEmployee();
+                    addEmployee();
                     break;
                 case 'Department':
-                    addDepartment();   
+                    addDepartment();
                     break;
                 case 'Role':
                     addRole();
@@ -162,34 +195,56 @@ function addChoice() {
 
 
 function addRole() {
-    inquirer.prompt([
-        {
-            type: 'input',
-            name: 'title',
-            message: "What is the role's name?",
-        },
-        {
-            type: 'input',
-            name: 'salary',
-            message: "What is the role's salary?",
-        },
-        {
-            type: 'input',
-            name: 'department_id',
-            message: "What is the role's department?",
-        }
-    ])
-        .then(function (response) {
-            connection.query(
-                "INSERT INTO role SET ?;",
-                [response],
-                function (err, result) {
-                    if (err) throw err;
-                    console.log("Role added successfully")
-                    mainOptions() 
-                });
-        }
-        );
+
+    // get all role
+    connection.query("select * from deparment", function (err, data) {
+        // console.log(data)
+        //   var array=[]
+        //  for (var i =0; i< data.length; i++){
+        //   array.push({name:array[i].name, value: array[i].id})
+        //  }
+        var deptChoices = data.map(dep => {
+            console.log("dep:", dep)
+            return {
+                name: dep.name,
+                value: dep.id
+            }
+        })
+        console.log(deptChoices)
+
+
+
+        inquirer.prompt([
+            {
+                type: 'input',
+                name: 'title',
+                message: "What is the role's name?",
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: "What is the role's salary?",
+            },
+            {
+                type: 'list',
+                name: 'department_id',
+                message: "What is the role's department?",
+                choices: deptChoices
+            }
+        ])
+            .then(function (response) {
+                console.log(response)
+                connection.query(
+                    "INSERT INTO role SET ?;",
+                    response,
+                    function (err, result) {
+                        if (err) throw err;
+                        console.log("Role added successfully")
+                        mainOptions()
+                    });
+            }
+            );
+    })
 }
 
 
@@ -208,7 +263,7 @@ function addDepartment() {
                 function (err, result) {
                     if (err) throw err;
                     console.log("Department added successfully")
-                    mainOptions() 
+                    mainOptions()
                 });
         }
         );
@@ -217,49 +272,82 @@ function addDepartment() {
 
 
 function addEmployee(array) {
-    inquirer.prompt([
-        {
-            type: 'input',
-            name: 'first_name',
-            message: "What is the employee's first name?",
-        },
-        {
-            type: 'input',
-            name: 'last_name',
-            message: "What is the employee's last name?",
-        },
-        {
-            type: 'input',
-            name: 'role_id',
-            message: "What is the employee's role ID?",
-            // choices: array
-            //this needs to be dynamic
-            // [
-            //     1,
-            //     2,
-            //     3,
-            //     4
-            // ]
-        },
-        {
-            type: 'input',
-            name: 'manager_id',
-            message: "Who is the employee's manager?",
-            //this needs to be dynamic and a list
-        },
-    ])
-        .then(function (response) {
-            //hacer una funcion para validar que el manager id no sea empty
-            connection.query(
-                "INSERT INTO employee SET ?;",
-                [response],
-                function (err, result) {
-                    if (err) throw err;
-                    console.log("Employee added successfully")
-                    mainOptions()
-                });
-        }
-        );
+
+
+    connection.query("select * from role", function (err, data) {
+        // console.log(data)
+        //   var array=[]
+        //  for (var i =0; i< data.length; i++){
+        //   array.push({name:array[i].name, value: array[i].id})
+        //  }
+        var roleChoices = data.map(rol => {
+
+            return {
+                name: rol.title,
+                value: rol.id
+            }
+        })
+
+
+
+        connection.query("select * from employee", function (err, data) {
+            // console.log(data)
+            //   var array=[]
+            //  for (var i =0; i< data.length; i++){
+            //   array.push({name:array[i].name, value: array[i].id})
+            //  }
+            var managerChoices = data.map(manager => {
+
+                return {
+                    name: manager.first_name + " " + manager.last_name,
+                    value: manager.id
+                }
+            })
+
+            managerChoices.push({name:"No Manager", value:null})
+
+
+
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'first_name',
+                    message: "What is the employee's first name?",
+                },
+                {
+                    type: 'input',
+                    name: 'last_name',
+                    message: "What is the employee's last name?",
+                },
+                {
+                    type: 'list',
+                    name: 'role_id',
+                    message: "What is the employee's role ID?",
+                    choices: roleChoices,
+                  
+                },
+                {
+                    type: 'list',
+                    name: 'manager_id',
+                    message: "Who is the employee's manager?",
+                    choices: managerChoices
+
+                },
+            ])
+                .then(function (response) {
+                    //hacer una funcion para validar que el manager id no sea empty
+                    connection.query(
+                        "INSERT INTO employee SET ?;",
+                        response,
+                        function (err, result) {
+                            if (err) throw err;
+                            console.log("Employee added successfully")
+                            mainOptions()
+                        });
+                })
+
+            })
+    })
 }
 
 //**functions for add main prompt */
