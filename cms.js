@@ -96,13 +96,60 @@ function viewChoice() {
 
                     break;
                 case 'All Employees By Manager':
-
+                    allEmployeeByManager();
                     break;
                 default:
                     console.log("Error: No option selected");
             }
         });
 }
+
+
+function allEmployeeByManager(array) {
+
+
+
+    connection.query("select id,  CONCAT(first_name, ' ', last_name) AS 'Manager' from employee where manager_id IS NOT NULL", function (err, data) {
+
+        var mngChoices = data.map(rol => {
+
+            return {
+                name: rol.Manager,
+                value: rol.id
+            }
+        })
+        if (mngChoices == "") {
+            console.log("\nThere are no managers assigned\nPlease select another option.\n")
+            return mainOptions();
+        }  
+            console.log(mngChoices)
+      
+
+
+
+
+        inquirer.prompt([{
+            type: 'list',
+            name: 'department',
+            message: "View all employees in which department?",
+            choices: mngChoices
+        }])
+            .then(function (response) {
+                connection.query(
+                    "SELECT e.id 'ID', e.first_name 'First Name', e.last_name 'Last name', department.name 'Department', role.title 'Position', role.salary 'Salary', CONCAT(f.first_name, ' ', f.last_name) AS 'Manager' FROM employee AS e left join employee AS f on e.manager_id = f.id INNER JOIN role ON e.role_id = role.id INNER JOIN deparment ON role.department_id = deparment.id WHERE deparment.name = ? ORDER BY id;",
+                    [response.department],
+                    function (err, result) {
+                        if (err) throw err;
+                        console.table(result);
+                        //  init();
+                    });
+            }
+            );
+    })
+}//end allemployess
+
+
+
 
 //Functions to make some questions dynamically show choices
 function distinctDepartment(cb) {
@@ -304,7 +351,7 @@ function addEmployee(array) {
                 }
             })
 
-            managerChoices.push({name:"No Manager", value:null})
+            managerChoices.push({ name: "No Manager", value: null })
 
 
 
@@ -324,7 +371,7 @@ function addEmployee(array) {
                     name: 'role_id',
                     message: "What is the employee's role ID?",
                     choices: roleChoices,
-                  
+
                 },
                 {
                     type: 'list',
@@ -346,7 +393,7 @@ function addEmployee(array) {
                         });
                 })
 
-            })
+        })
     })
 }
 
