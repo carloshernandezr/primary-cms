@@ -93,7 +93,7 @@ function viewChoice() {
                     break;
                 case 'All Employees By Department':
 
-
+                    allEmployeeByDeparment();
                     break;
                 case 'All Employees By Manager':
                     allEmployeeByManager();
@@ -105,43 +105,88 @@ function viewChoice() {
 }
 
 
-function allEmployeeByManager(array) {
+function allEmployeeByDeparment() {
 
+    connection.query("select d.name as name, d.id as id, r.department_id, e.role_id, r.id from deparment as d INNER JOIN role as r ON d.id = r.department_id INNER JOIN employee as e ON e.role_id = r.id  ", function (err, data) {
 
-
-    connection.query("select id,  CONCAT(first_name, ' ', last_name) AS 'Manager' from employee where manager_id IS NOT NULL", function (err, data) {
-
-        var mngChoices = data.map(rol => {
+        var ebdChoices = data.map(ebd => {
 
             return {
-                name: rol.Manager,
-                value: rol.id
+                name: ebd.name,
+                value: ebd.id
+            }
+        })
+        if (ebdChoices == "") {
+            console.log("\nThere are no deparment assigned\nPlease select another option.\n")
+            return mainOptions();
+        }
+ //  console.log(ebdChoices)
+
+        inquirer.prompt([{
+            type: 'list',
+            name: 'eByd',
+            message: "View all employees in which department?",
+            choices: ebdChoices
+        }])
+            .then(function (response) {
+             
+                connection.query(
+             
+                    "select f.first_name, f.last_name, CONCAT(e.first_name, ' ', e.last_name) AS 'Manager'  from employee as e INNER JOIN employee as f ON e.id = f.manager_id   where f.manager_id = ?",
+                     
+                [response.eByd],
+                  
+                    function (err, result) {
+                        if (err) throw err;
+                        console.table(result);
+                        console.table("\n");
+                        mainOptions();
+                    });
+            }
+            );
+    })
+}//end allemployess
+
+
+//*
+
+
+function allEmployeeByManager() {
+
+    connection.query("SELECT DISTINCT e.id AS fd, f.manager_id AS managerID,  CONCAT(e.first_name, ' ', e.last_name) AS 'Manager' FROM employee AS e INNER JOIN employee AS f ON f.manager_id = e.id   ", function (err, data) {
+
+        var mngChoices = data.map(mng => {
+
+            return {
+                name: mng.Manager,
+                value: mng.managerID
             }
         })
         if (mngChoices == "") {
             console.log("\nThere are no managers assigned\nPlease select another option.\n")
             return mainOptions();
-        }  
-            console.log(mngChoices)
-      
-
-
-
+        }
+   
 
         inquirer.prompt([{
             type: 'list',
-            name: 'department',
+            name: 'depart',
             message: "View all employees in which department?",
             choices: mngChoices
         }])
             .then(function (response) {
+             
                 connection.query(
-                    "SELECT e.id 'ID', e.first_name 'First Name', e.last_name 'Last name', department.name 'Department', role.title 'Position', role.salary 'Salary', CONCAT(f.first_name, ' ', f.last_name) AS 'Manager' FROM employee AS e left join employee AS f on e.manager_id = f.id INNER JOIN role ON e.role_id = role.id INNER JOIN deparment ON role.department_id = deparment.id WHERE deparment.name = ? ORDER BY id;",
-                    [response.department],
+             
+                    "select f.first_name, f.last_name, CONCAT(e.first_name, ' ', e.last_name) AS 'Manager'  from employee as e INNER JOIN employee as f ON e.id = f.manager_id   where f.manager_id = ?",
+                     
+                [response.depart],
+                  
                     function (err, result) {
                         if (err) throw err;
                         console.table(result);
-                        //  init();
+                        console.table("\n");
+                        mainOptions();
                     });
             }
             );
