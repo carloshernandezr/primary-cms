@@ -411,7 +411,8 @@ function viewChoice() {
             [
                 'All Employees',
                 'All Employees By Department',
-                'All Employees By Manager'
+                'All Employees By Manager',
+                'Total Budget utilized By Department'
             ]
     }])
         .then(function (response) {
@@ -426,11 +427,60 @@ function viewChoice() {
                 case 'All Employees By Manager':
                     allEmployeeByManager();
                     break;
+                    case 'Total Budget utilized By Department':
+                        allBudget();
+                        break;
                 default:
                     console.log("Error: No option selected");
             }
         });
 }//end viewchoices
+
+function allBudget() {
+
+    connection.query(" SELECT  * from deparment ", function (err, data) {
+
+        var rolBChoices = data.map(ebdb => {
+
+            return {
+                name: ebdb.name,
+                value: ebdb.id,
+
+
+            }
+        })
+        if (rolBChoices == "") {
+            console.log("\nThere are no department register\nPlease select another option.\n")
+            return mainOptions();
+        }
+
+        inquirer.prompt([{
+            type: 'list',
+            name: 'eBydB',
+            message: " which department dou you want see the budget?",
+            choices: rolBChoices
+        }])
+            .then(function (response) {
+console.log(response.eBydB)
+                  connection.query(
+      
+                    "SELECT SUM(r.salary) as Budget_Deparment from role as r INNER JOIN employee as e ON r.id = e.role_id where r.department_id = ? ",
+
+                    [response.eBydB],
+
+                    function (err, result) {
+                        if (err) throw err;
+                        console.table(result);
+                        console.table("\n");
+                        mainOptions();
+                    });
+
+
+
+            }
+            );
+    })
+}//end allbudget
 
 
 function allEmployeeByDeparment() {
