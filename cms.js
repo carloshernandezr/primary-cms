@@ -131,8 +131,7 @@ function updateRole() {
         }
         ])
             .then(function (response) {
-                console.log(response)
-                //cambiar por rol
+ 
                 connection.query(" SELECT title, id from role ", function (err, data) {
 
                     updateRolChoices = data.map(upREmp => {
@@ -145,7 +144,7 @@ function updateRole() {
                     })
 
                     if (updateRolChoices == "") {
-                        console.log("\nThere are any Rol register yet in the system\nPlease add a new role.\n")
+                        console.log("\nThere are any Role register yet in the system\nPlease add a new role.\n")
                         return mainOptions();
                     }
 
@@ -157,15 +156,14 @@ function updateRole() {
                             choices: updateRolChoices
                         }
                     ]).then(function (res2) {
-                        console.log(res2, response)
+                        
                         connection.query(
                             "UPDATE  employee SET role_id = ?  WHERE id = ?",
                             [res2.idRol, response.idEmp],
 
                             function (err, result) {
                                 if (err) throw err;
-                                console.table(result);
-                                console.table("\n");
+                                console.log("Role employee update successfully\n");
                                 mainOptions();
                             }
                         );
@@ -203,7 +201,7 @@ function updateManager() {
         }
         ])
             .then(function (response) {
-                console.log(response)
+             
 
                 connection.query(" SELECT  CONCAT(first_name, ' ', last_name) as Employee_Name, id from employee WHERE id  <>  ? ", response.idEmp, function (err, data) {
 
@@ -229,15 +227,14 @@ function updateManager() {
                             choices: updateEmpChoices
                         }
                     ]).then(function (res2) {
-                        console.log(res2, response)
+                       
                         connection.query(
                             "UPDATE  employee SET manager_id = ?  WHERE id = ?",
                             [res2.idManager, response.idEmp],
 
                             function (err, result) {
                                 if (err) throw err;
-                                console.table(result);
-                                console.table("\n");
+                                console.log("Manager employee update successfully\n");
                                 mainOptions();
                             }
                         );
@@ -252,7 +249,7 @@ function updateManager() {
 
 /**functions for delete */
 function deleteChoice() {
-    console.log("delete chooice")
+    
     inquirer.prompt([{
         type: 'list',
         name: 'deleteType',
@@ -284,7 +281,7 @@ function deleteChoice() {
 
 
 function deleteRole() {
-   
+
     connection.query(" SELECT title, id from role  ", function (err, data) {
 
         var delRoChoices = data.map(delRol => {
@@ -307,14 +304,14 @@ function deleteRole() {
         }])
             .then(function (response) {
 
- 
+
                 connection.query(
                     "DELETE FROM role WHERE id = ?",
                     [response.delR],
 
                     function (err, result) {
-                        if (err) throw err;                        
-                        console.log("\nRole successfully removed.")
+                        if (err) throw err;
+                        console.log("Role successfully removed.\n")
                         mainOptions();
                     }
                 );
@@ -324,7 +321,7 @@ function deleteRole() {
 }
 
 function deleteDepartment() {
-   
+
     connection.query(" SELECT name, id from deparment  ", function (err, data) {
 
         var delDepChoices = data.map(delDep => {
@@ -354,8 +351,7 @@ function deleteDepartment() {
 
                     function (err, result) {
                         if (err) throw err;
-                        console.log("department:", response.delde.name, "successfully removed.")
-                        console.table("\n");
+                        console.log("department successfully removed.\n")
                         mainOptions();
                     }
                 );
@@ -387,7 +383,7 @@ function deleteEmployee() {
             choices: delEmpChoices
         }])
             .then(function (response) {
-                console.log(response.delem)
+               
 
                 connection.query(
                     "DELETE FROM employee WHERE id = ?",
@@ -395,8 +391,7 @@ function deleteEmployee() {
 
                     function (err, result) {
                         if (err) throw err;
-                        console.table(result);
-                        console.table("\n");
+                        console.log("Employee successfully removed.\n")
                         mainOptions();
                     }
                 );
@@ -455,8 +450,6 @@ function allEmployeeByDeparment() {
             console.log("\nThere are no department assigned\nPlease select another option.\n")
             return mainOptions();
         }
-        console.log("ebdChoices")
-        console.log(ebdChoices)
 
         inquirer.prompt([{
             type: 'list',
@@ -592,15 +585,12 @@ function addRole() {
         //   array.push({name:array[i].name, value: array[i].id})
         //  }
         var deptChoices = data.map(dep => {
-            console.log("dep:", dep)
+
             return {
                 name: dep.name,
                 value: dep.id
             }
         })
-        console.log(deptChoices)
-
-
 
         inquirer.prompt([
             {
@@ -621,13 +611,13 @@ function addRole() {
             }
         ])
             .then(function (response) {
-                console.log(response)
+               
                 connection.query(
                     "INSERT INTO role SET ?;",
                     response,
                     function (err, result) {
                         if (err) throw err;
-                        console.log("Role added successfully")
+                        console.log("Role added successfully\n")
                         mainOptions()
                     });
             }
@@ -650,7 +640,7 @@ function addDepartment() {
                 [response],
                 function (err, result) {
                     if (err) throw err;
-                    console.log("Department added successfully")
+                    console.log("Department added successfully\n")
                     mainOptions()
                 });
         }
@@ -727,7 +717,7 @@ function addEmployee(array) {
                         response,
                         function (err, result) {
                             if (err) throw err;
-                            console.log("Employee added successfully")
+                            console.log("Employee added successfully\n")
                             mainOptions()
                         });
                 })
