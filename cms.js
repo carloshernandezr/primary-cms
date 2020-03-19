@@ -73,11 +73,7 @@ function mainOptions() {
 
 
 
-//**functions for add main prompt */
-
-
-
-//**functions for add main prompt */
+///**function for update */
 function updateChoice() {
     console.log("delete chooice")
     inquirer.prompt([{
@@ -136,8 +132,8 @@ function updateRole() {
         ])
             .then(function (response) {
                 console.log(response)
-//cambiar por rol
-                connection.query(" SELECT title, id from role ",  function (err, data) {
+                //cambiar por rol
+                connection.query(" SELECT title, id from role ", function (err, data) {
 
                     updateRolChoices = data.map(upREmp => {
 
@@ -251,8 +247,10 @@ function updateManager() {
             })
     })
 }
+///**end function for update */
 
 
+/**functions for delete */
 function deleteChoice() {
     console.log("delete chooice")
     inquirer.prompt([{
@@ -285,44 +283,38 @@ function deleteChoice() {
 }
 
 
-/**functions for delete */
+function deleteRole() {
+   
+    connection.query(" SELECT title, id from role  ", function (err, data) {
 
-
-
-
-function deleteDepartment() {
-    console.log("entro")
-    connection.query(" SELECT  CONCAT(first_name, ' ', last_name) as Employee_Name, id from employee  ", function (err, data) {
-
-        var delEmpChoices = data.map(delEmp => {
+        var delRoChoices = data.map(delRol => {
 
             return {
-                name: delEmp.Employee_Name,
-                value: delEmp.id
+                name: delRol.title,
+                value: delRol.id
             }
         })
-        if (delEmpChoices == "") {
-            console.log("\nThere are any employee register\nPlease select another option.\n")
+        if (delRoChoices == "") {
+            console.log("\nThere is no registered Rol\nPlease select another option.\n")
             return mainOptions();
         }
 
         inquirer.prompt([{
             type: 'list',
-            name: 'delem',
-            message: "Which employee do you want delete?",
-            choices: delEmpChoices
+            name: 'delR',
+            message: "Which Rol do you want to remove?",
+            choices: delRoChoices
         }])
             .then(function (response) {
-                console.log(response.delem)
 
+ 
                 connection.query(
-                    "DELETE FROM employee WHERE id = ?",
-                    [response.delem],
+                    "DELETE FROM role WHERE id = ?",
+                    [response.delR],
 
                     function (err, result) {
-                        if (err) throw err;
-                        console.table(result);
-                        console.table("\n");
+                        if (err) throw err;                        
+                        console.log("\nRole successfully removed.")
                         mainOptions();
                     }
                 );
@@ -331,7 +323,46 @@ function deleteDepartment() {
     })
 }
 
+function deleteDepartment() {
+   
+    connection.query(" SELECT name, id from deparment  ", function (err, data) {
 
+        var delDepChoices = data.map(delDep => {
+
+            return {
+                name: delDep.name,
+                value: delDep.id
+            }
+        })
+        if (delDepChoices == "") {
+            console.log("\nThere is no registered department\nPlease select another option.\n")
+            return mainOptions();
+        }
+
+        inquirer.prompt([{
+            type: 'list',
+            name: 'delde',
+            message: "Which department do you want to remove?",
+            choices: delDepChoices
+        }])
+            .then(function (response) {
+
+
+                connection.query(
+                    "DELETE FROM deparment WHERE id = ?",
+                    [response.delde],
+
+                    function (err, result) {
+                        if (err) throw err;
+                        console.log("department:", response.delde.name, "successfully removed.")
+                        console.table("\n");
+                        mainOptions();
+                    }
+                );
+
+            });
+    })
+}
 
 function deleteEmployee() {
     console.log("entro")
@@ -374,6 +405,7 @@ function deleteEmployee() {
     })
 }
 
+
 /**function for view all data */
 function viewChoice() {
     inquirer.prompt([{
@@ -403,7 +435,7 @@ function viewChoice() {
                     console.log("Error: No option selected");
             }
         });
-}
+}//end viewchoices
 
 
 function allEmployeeByDeparment() {
@@ -450,7 +482,7 @@ function allEmployeeByDeparment() {
             }
             );
     })
-}//end allemployess
+}//end allemployesDeparment
 
 
 //*
@@ -495,7 +527,7 @@ function allEmployeeByManager() {
             }
             );
     })
-}//end allemployess
+}//end allemployessManmager
 
 
 
@@ -512,9 +544,9 @@ function allEmployees(runInit, cb) {
                 mainOptions()
             }
         });
-}
+}//end allemployees
 
-/**function for view all data */
+/**function for view all data the end */
 
 
 //**functions for add main prompt */
@@ -624,7 +656,6 @@ function addDepartment() {
         }
         );
 }
-
 
 
 function addEmployee(array) {
