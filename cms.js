@@ -57,12 +57,12 @@ function mainOptions() {
                     addChoice();
                     break;
 
-                case "delete":
-
+                case "Delete":
+                    deleteChoice()
                     break;
 
                 case "Update":
-
+                    updateChoice()
                     break;
 
 
@@ -72,6 +72,307 @@ function mainOptions() {
 }
 
 
+
+//**functions for add main prompt */
+
+
+
+//**functions for add main prompt */
+function updateChoice() {
+    console.log("delete chooice")
+    inquirer.prompt([{
+        type: 'list',
+        name: 'deleteType',
+        message: 'What would you like update?',
+        choices:
+            [
+
+                'Manager',
+                'Role'
+            ]
+    }])
+        .then(function (response) {
+            switch (response.deleteType) {
+
+                case 'Manager':
+                    updateManager();
+                    break;
+                case 'Role':
+                    updateRole();
+                    break;
+                default:
+                    console.log("Error: No option selected");
+            }
+        });
+
+}
+
+
+
+function updateRole() {
+    //console.log("entro")       SELECT  CONCAT(first_name, ' ', last_name) as Employee_Name, id from employee  where manager_id IS NOT NULL
+    connection.query(" SELECT  CONCAT(first_name, ' ', last_name) as Employee_Name, id from employee ", function (err, data) {
+
+        var updateRolEChoices = data.map(rEmp => {
+
+            return {
+                name: rEmp.Employee_Name,
+                value: rEmp.id
+            }
+
+        })
+
+        if (updateRolEChoices == "") {
+            console.log("\nThere are no employee register in the system\nPlease add a new employee.\n")
+            return mainOptions();
+        }
+
+        inquirer.prompt([{
+            type: 'list',
+            name: 'idEmp',
+            message: "Which employee do you want update role?",
+            choices: updateRolEChoices
+        }
+        ])
+            .then(function (response) {
+                console.log(response)
+//cambiar por rol
+                connection.query(" SELECT title, id from role ",  function (err, data) {
+
+                    updateRolChoices = data.map(upREmp => {
+
+                        return {
+                            name: upREmp.title,
+                            value: upREmp.id
+                        }
+
+                    })
+
+                    if (updateRolChoices == "") {
+                        console.log("\nThere are any Rol register yet in the system\nPlease add a new role.\n")
+                        return mainOptions();
+                    }
+
+                    inquirer.prompt([
+                        {
+                            type: 'list',
+                            name: 'idRol',
+                            message: "Which manager do you want update?",
+                            choices: updateRolChoices
+                        }
+                    ]).then(function (res2) {
+                        console.log(res2, response)
+                        connection.query(
+                            "UPDATE  employee SET role_id = ?  WHERE id = ?",
+                            [res2.idRol, response.idEmp],
+
+                            function (err, result) {
+                                if (err) throw err;
+                                console.table(result);
+                                console.table("\n");
+                                mainOptions();
+                            }
+                        );
+
+                    });
+                })
+            })
+    })
+}
+
+
+function updateManager() {
+    //console.log("entro")       SELECT  CONCAT(first_name, ' ', last_name) as Employee_Name, id from employee  where manager_id IS NOT NULL
+    connection.query(" SELECT  CONCAT(first_name, ' ', last_name) as Employee_Name, id from employee ", function (err, data) {
+
+        var updateEmpChoices = data.map(upEmp => {
+
+            return {
+                name: upEmp.Employee_Name,
+                value: upEmp.id
+            }
+
+        })
+
+        if (updateEmpChoices == "") {
+            console.log("\nThere are any employee with manager assing\nPlease select another option.\n")
+            return mainOptions();
+        }
+
+        inquirer.prompt([{
+            type: 'list',
+            name: 'idEmp',
+            message: "Which employee do you want update?",
+            choices: updateEmpChoices
+        }
+        ])
+            .then(function (response) {
+                console.log(response)
+
+                connection.query(" SELECT  CONCAT(first_name, ' ', last_name) as Employee_Name, id from employee WHERE id  <>  ? ", response.idEmp, function (err, data) {
+
+                    updateEmpChoices = data.map(upEmp => {
+
+                        return {
+                            name: upEmp.Employee_Name,
+                            value: upEmp.id
+                        }
+
+                    })
+
+                    if (updateEmpChoices == "") {
+                        console.log("\nThere are any employee with manager assing\nPlease select another option.\n")
+                        return mainOptions();
+                    }
+
+                    inquirer.prompt([
+                        {
+                            type: 'list',
+                            name: 'idManager',
+                            message: "Which manager do you want update?",
+                            choices: updateEmpChoices
+                        }
+                    ]).then(function (res2) {
+                        console.log(res2, response)
+                        connection.query(
+                            "UPDATE  employee SET manager_id = ?  WHERE id = ?",
+                            [res2.idManager, response.idEmp],
+
+                            function (err, result) {
+                                if (err) throw err;
+                                console.table(result);
+                                console.table("\n");
+                                mainOptions();
+                            }
+                        );
+
+                    });
+                })
+            })
+    })
+}
+
+
+function deleteChoice() {
+    console.log("delete chooice")
+    inquirer.prompt([{
+        type: 'list',
+        name: 'deleteType',
+        message: 'What would you like to delete?',
+        choices:
+            [
+                'Employee',
+                'Department',
+                'Role'
+            ]
+    }])
+        .then(function (response) {
+            switch (response.deleteType) {
+                case 'Employee':
+                    deleteEmployee();
+                    break;
+                case 'Department':
+                    deleteDepartment();
+                    break;
+                case 'Role':
+                    deleteRole();
+                    break;
+                default:
+                    console.log("Error: No option selected");
+            }
+        });
+
+}
+
+
+/**functions for delete */
+
+
+
+
+function deleteDepartment() {
+    console.log("entro")
+    connection.query(" SELECT  CONCAT(first_name, ' ', last_name) as Employee_Name, id from employee  ", function (err, data) {
+
+        var delEmpChoices = data.map(delEmp => {
+
+            return {
+                name: delEmp.Employee_Name,
+                value: delEmp.id
+            }
+        })
+        if (delEmpChoices == "") {
+            console.log("\nThere are any employee register\nPlease select another option.\n")
+            return mainOptions();
+        }
+
+        inquirer.prompt([{
+            type: 'list',
+            name: 'delem',
+            message: "Which employee do you want delete?",
+            choices: delEmpChoices
+        }])
+            .then(function (response) {
+                console.log(response.delem)
+
+                connection.query(
+                    "DELETE FROM employee WHERE id = ?",
+                    [response.delem],
+
+                    function (err, result) {
+                        if (err) throw err;
+                        console.table(result);
+                        console.table("\n");
+                        mainOptions();
+                    }
+                );
+
+            });
+    })
+}
+
+
+
+function deleteEmployee() {
+    console.log("entro")
+    connection.query(" SELECT  CONCAT(first_name, ' ', last_name) as Employee_Name, id from employee  ", function (err, data) {
+
+        var delEmpChoices = data.map(delEmp => {
+
+            return {
+                name: delEmp.Employee_Name,
+                value: delEmp.id
+            }
+        })
+        if (delEmpChoices == "") {
+            console.log("\nThere are any employee register\nPlease select another option.\n")
+            return mainOptions();
+        }
+
+        inquirer.prompt([{
+            type: 'list',
+            name: 'delem',
+            message: "Which employee do you want delete?",
+            choices: delEmpChoices
+        }])
+            .then(function (response) {
+                console.log(response.delem)
+
+                connection.query(
+                    "DELETE FROM employee WHERE id = ?",
+                    [response.delem],
+
+                    function (err, result) {
+                        if (err) throw err;
+                        console.table(result);
+                        console.table("\n");
+                        mainOptions();
+                    }
+                );
+
+            });
+    })
+}
 
 /**function for view all data */
 function viewChoice() {
@@ -107,20 +408,23 @@ function viewChoice() {
 
 function allEmployeeByDeparment() {
 
-    connection.query("select d.name as name, d.id as id, r.department_id, e.role_id, r.id from deparment as d INNER JOIN role as r ON d.id = r.department_id INNER JOIN employee as e ON e.role_id = r.id  ", function (err, data) {
+    connection.query(" SELECT  DISTINCT   d.name as name , d.id as id from deparment as d INNER JOIN role as r ON d.id = r.department_id INNER JOIN employee as e ON e.role_id = r.id ", function (err, data) {
 
         var ebdChoices = data.map(ebd => {
 
             return {
                 name: ebd.name,
-                value: ebd.id
+                value: ebd.id,
+
+
             }
         })
         if (ebdChoices == "") {
-            console.log("\nThere are no deparment assigned\nPlease select another option.\n")
+            console.log("\nThere are no department assigned\nPlease select another option.\n")
             return mainOptions();
         }
- //  console.log(ebdChoices)
+        console.log("ebdChoices")
+        console.log(ebdChoices)
 
         inquirer.prompt([{
             type: 'list',
@@ -129,13 +433,14 @@ function allEmployeeByDeparment() {
             choices: ebdChoices
         }])
             .then(function (response) {
-             
+
                 connection.query(
-             
-                    "select f.first_name, f.last_name, CONCAT(e.first_name, ' ', e.last_name) AS 'Manager'  from employee as e INNER JOIN employee as f ON e.id = f.manager_id   where f.manager_id = ?",
-                     
-                [response.eByd],
-                  
+
+
+                    "select e.first_name, e.last_name from  employee as e INNER JOIN role as r ON  e.role_id = r.id inner join deparment as d on r.department_id = d.id where d.id=?",
+
+                    [response.eByd],
+
                     function (err, result) {
                         if (err) throw err;
                         console.table(result);
@@ -149,7 +454,6 @@ function allEmployeeByDeparment() {
 
 
 //*
-
 
 function allEmployeeByManager() {
 
@@ -166,7 +470,7 @@ function allEmployeeByManager() {
             console.log("\nThere are no managers assigned\nPlease select another option.\n")
             return mainOptions();
         }
-   
+
 
         inquirer.prompt([{
             type: 'list',
@@ -175,13 +479,13 @@ function allEmployeeByManager() {
             choices: mngChoices
         }])
             .then(function (response) {
-             
+
                 connection.query(
-             
+
                     "select f.first_name, f.last_name, CONCAT(e.first_name, ' ', e.last_name) AS 'Manager'  from employee as e INNER JOIN employee as f ON e.id = f.manager_id   where f.manager_id = ?",
-                     
-                [response.depart],
-                  
+
+                    [response.depart],
+
                     function (err, result) {
                         if (err) throw err;
                         console.table(result);
@@ -194,40 +498,6 @@ function allEmployeeByManager() {
 }//end allemployess
 
 
-
-
-//Functions to make some questions dynamically show choices
-function distinctDepartment(cb) {
-    let deptArray = [];
-    connection.query(
-        "SELECT DISTINCT role FROM department;",
-        function (err, result) {
-            if (err) throw err;
-            result.forEach(element => deptArray.push(element.role));
-            cb(deptArray)
-        }
-    )
-}
-
-function allDepartmentEmployees(array) {
-    inquirer.prompt([{
-        type: 'list',
-        name: 'department',
-        message: "View all employees in which department?",
-        choices: array
-    }])
-        .then(function (response) {
-            connection.query(
-                "SELECT e.id 'ID', e.first_name 'First Name', e.last_name 'Last name', department.name 'Department', role.title 'Position', role.salary 'Salary', CONCAT(f.first_name, ' ', f.last_name) AS 'Manager' FROM employee AS e left join employee AS f on e.manager_id = f.id INNER JOIN role ON e.role_id = role.id INNER JOIN deparment ON role.department_id = deparment.id WHERE deparment.name = ? ORDER BY id;",
-                [response.department],
-                function (err, result) {
-                    if (err) throw err;
-                    console.table(result);
-                    init();
-                });
-        }
-        );
-}
 
 function allEmployees(runInit, cb) {
     connection.query(
@@ -245,12 +515,6 @@ function allEmployees(runInit, cb) {
 }
 
 /**function for view all data */
-
-
-
-
-
-
 
 
 //**functions for add main prompt */
@@ -397,7 +661,6 @@ function addEmployee(array) {
             })
 
             managerChoices.push({ name: "No Manager", value: null })
-
 
 
             inquirer.prompt([
